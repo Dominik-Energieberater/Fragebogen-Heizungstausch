@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fragebogen Heizungstausch</title>
+<meta name="description" content="Digitaler Fragebogen zur Vorbereitung des Förderantrags Heizungstausch (BEG EM / KfW 458).">
+<style>
+  :root{
+    --brand:#1f7a4d; --brand-dark:#155c39; --brand-soft:#e8f4ee;
+    --text:#1d2521; --muted:#5d6b64; --line:#d7e0db; --bg:#f5f7f6; --card:#ffffff;
+    --warn-bg:#fff6e0; --warn-line:#e8b53a; --info-bg:#eaf2fb; --info-line:#6b9bd1;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  header.brandbar{background:#fff;padding:14px 16px 12px;border-bottom:4px solid transparent;
+    border-image:linear-gradient(90deg,#1f9a3c,#8cc63f,#f2d31b,#f39a1e,#e5332a) 1}
+  header.brandbar .wrap{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  header.brandbar img{height:56px;width:auto;max-width:100%;display:block}
+  header.top{background:var(--brand);color:#fff;padding:16px}
+  header.top h1{margin:0;font-size:1.35rem;font-weight:650}
+  header.top p{margin:2px 0 0;opacity:.9;font-size:.92rem}
+  .wrap{max-width:880px;margin:0 auto}
+  main{padding:20px 16px 60px}
+  .company{font-size:.85rem;text-align:right;color:var(--muted);line-height:1.45}
+  .company strong{display:block;font-size:.95rem;color:var(--text)}
+  @media (max-width:640px){.company{text-align:left}header.brandbar img{height:44px}}
+
+  /* Schritt-Navigation */
+  nav.steps{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:thin}
+  nav.steps button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:6px 12px;font-size:.85rem;cursor:pointer;white-space:nowrap}
+  nav.steps button.active{background:var(--brand);border-color:var(--brand);color:#fff}
+  nav.steps button.done{border-color:var(--brand);color:var(--brand)}
+  .progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:18px}
+  .progress div{height:100%;background:var(--brand);width:0;transition:width .25s}
+
+  section.step{display:none;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  section.step.active{display:block}
+  section.step h2{margin:0 0 4px;font-size:1.25rem;color:var(--brand-dark)}
+  section.step > .lead{margin:0 0 18px;color:var(--muted);font-size:.93rem}
+  h3{font-size:1rem;margin:22px 0 8px;color:var(--brand-dark)}
+
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+  .grid .full{grid-column:1/-1}
+  @media (max-width:640px){.grid{grid-template-columns:1fr}}
+  label.f{display:flex;flex-direction:column;gap:4px;font-size:.9rem;font-weight:550}
+  label.f small, .hint{font-weight:400;color:var(--muted);font-size:.82rem}
+  input[type=text],input[type=email],input[type=tel],input[type=number],input[type=date],select,textarea{
+    font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);width:100%}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand)}
+  textarea{min-height:80px;resize:vertical}
+  fieldset{border:0;padding:0;margin:0}
+  fieldset legend{font-size:.9rem;font-weight:550;margin-bottom:6px;padding:0}
+  .choices{display:flex;flex-wrap:wrap;gap:8px}
+  .choices label{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer;font-size:.92rem;background:#fff}
+  .choices label:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+  .choices.col{flex-direction:column}
+  input[type=checkbox],input[type=radio]{accent-color:var(--brand);width:17px;height:17px;margin:0}
+
+  .box{border-radius:8px;padding:11px 14px;font-size:.9rem;margin:14px 0}
+  .box.warn{background:var(--warn-bg);border-left:4px solid var(--warn-line)}
+  .box.info{background:var(--info-bg);border-left:4px solid var(--info-line)}
+  .box.ok{background:var(--brand-soft);border-left:4px solid var(--brand)}
+  .hidden{display:none !important}
+
+  /* Förderrechner */
+  .calc{margin-top:18px;border:2px solid var(--brand);border-radius:var(--radius);overflow:hidden}
+  .calc h3{margin:0;background:var(--brand);color:#fff;padding:10px 14px}
+  .calc table{width:100%;border-collapse:collapse;font-size:.93rem}
+  .calc td{padding:8px 14px;border-bottom:1px solid var(--line)}
+  .calc td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .calc tr.sum td{font-weight:700;font-size:1.08rem;background:var(--brand-soft);border-bottom:0}
+  .calc tr.off td{color:var(--muted)}
+  .calc .note{padding:10px 14px;font-size:.8rem;color:var(--muted);margin:0}
+
+  .doclist label{align-items:flex-start}
+  .doclist label span small{display:block;color:var(--muted);font-size:.8rem}
+
+  ul.rules{padding-left:20px;margin:0}
+  ul.rules li{margin-bottom:8px}
+
+  .sig-wrap{border:1px dashed var(--muted);border-radius:8px;background:#fff;position:relative;touch-action:none}
+  #sig{width:100%;height:170px;display:block;cursor:crosshair}
+  .sig-wrap .ph{position:absolute;left:14px;bottom:10px;color:var(--muted);font-size:.8rem;pointer-events:none}
+
+  .navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:24px;flex-wrap:wrap}
+  button.b{font:inherit;border-radius:8px;padding:10px 18px;cursor:pointer;border:1px solid var(--brand);background:#fff;color:var(--brand);font-weight:600}
+  button.b.primary{background:var(--brand);color:#fff}
+  button.b.primary:hover{background:var(--brand-dark)}
+  button.b.ghost{border-color:var(--line);color:var(--muted);font-weight:500}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:0 16px 30px}
+  .saved{font-size:.8rem;color:var(--muted);text-align:right;margin:-8px 0 10px;min-height:1.2em}
+
+  /* Druck / PDF */
+  .print-only{display:none}
+  @media print{
+    @page{margin:14mm}
+    body{background:#fff;font-size:11pt}
+    header.top{background:none;color:#000;border-bottom:2px solid var(--brand);padding:0 0 8px}
+    nav.steps,.progress,.navbtns,.actions,.no-print,.saved,footer .no-print{display:none !important}
+    main{padding:10px 0}
+    section.step{display:block !important;border:0;padding:0 0 10px;break-inside:auto}
+    section.step h2{border-bottom:1px solid var(--line);padding-bottom:3px;margin-top:14px}
+    .choices label{border:0;padding:2px 6px 2px 0;background:none !important}
+    .choices label:not(:has(input:checked)){display:none}
+    .doclist label:not(:has(input:checked)){display:flex}
+    input,select,textarea{border:0;border-bottom:1px solid #bbb;border-radius:0;padding:2px 0}
+    .calc{break-inside:avoid}
+    .print-only{display:block}
+    .box{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header class="brandbar">
+  <div class="wrap">
+    <img src="logo.png" alt="Mößner Gebäudeenergieberatung">
+    <div class="company" id="companyBox"></div>
+  </div>
+</header>
+<header class="top">
+  <div class="wrap">
+    <h1>Fragebogen Heizungstausch</h1>
+    <p>Vorbereitung Ihres Förderantrags · BEG Einzelmaßnahmen (KfW 458)</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="steps" id="stepNav" aria-label="Schritte"></nav>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div class="saved" id="savedInfo"></div>
+
+  <form id="form" autocomplete="on" onsubmit="return false">
+
+  <!-- 1 -->
+  <section class="step" data-title="Antragsteller">
+    <h2>1. Antragsteller</h2>
+    <p class="lead">Wer stellt den Antrag? Der Antrag wird später im KfW-Portal auf diese Person bzw. Firma gestellt.</p>
+    <div class="grid">
+      <label class="f">Anrede
+        <select name="anrede"><option></option><option>Frau</option><option>Herr</option><option>Divers</option><option>Firma / WEG</option></select>
+      </label>
+      <label class="f">Geburtsdatum <small>für die Identifizierung im KfW-Portal</small>
+        <input type="date" name="geburtsdatum">
+      </label>
+      <label class="f">Vorname<input type="text" name="vorname" autocomplete="given-name"></label>
+      <label class="f">Nachname / Firma<input type="text" name="nachname" autocomplete="family-name"></label>
+      <label class="f full">Straße, Hausnummer (Wohnanschrift)<input type="text" name="strasse" autocomplete="street-address"></label>
+      <label class="f">PLZ<input type="text" name="plz" inputmode="numeric" autocomplete="postal-code"></label>
+      <label class="f">Ort<input type="text" name="ort" autocomplete="address-level2"></label>
+      <label class="f">Telefon<input type="tel" name="telefon" autocomplete="tel"></label>
+      <label class="f">E-Mail<input type="email" name="email" autocomplete="email"></label>
+      <fieldset class="full">
+        <legend>Ihre Rolle</legend>
+        <div class="choices">
+          <label><input type="radio" name="rolle" value="Eigentümer/in (selbst bewohnt)"> Eigentümer/in, selbst bewohnt</label>
+          <label><input type="radio" name="rolle" value="Eigentümer/in (vermietet)"> Eigentümer/in, vermietet</label>
+          <label><input type="radio" name="rolle" value="Eigentümergemeinschaft (WEG)"> WEG</label>
+          <label><input type="radio" name="rolle" value="Unternehmen / Kommune / Verein"> Unternehmen / Sonstige</label>
+        </div>
+      </fieldset>
+      <fieldset class="full">
+        <legend>Gibt es weitere Eigentümer (z. B. Ehepartner)?</legend>
+        <div class="choices">
+          <label><input type="radio" name="miteigentum" value="nein"> Nein, Alleineigentum</label>
+          <label><input type="radio" name="miteigentum" value="ja"> Ja</label>
+        </div>
+      </fieldset>
+      <label class="f full show-if" data-if="miteigentum=ja">Name(n) der weiteren Eigentümer
+        <input type="text" name="miteigentuemer">
+        <small>Weitere Eigentümer müssen dem Antrag zustimmen (Einverständniserklärung).</small>
+      </label>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="step" data-title="Gebäude">
+    <h2>2. Gebäude</h2>
+    <p class="lead">Angaben zum Gebäude, in dem die neue Heizung eingebaut wird.</p>
+    <div class="grid">
+      <fieldset class="full">
+        <legend>Ist die Gebäudeadresse identisch mit Ihrer Wohnanschrift?</legend>
+        <div class="choices">
+          <label><input type="radio" name="adrGleich" value="ja"> Ja</label>
+          <label><input type="radio" name="adrGleich" value="nein"> Nein</label>
+        </div>
+      </fieldset>
+      <label class="f full show-if" data-if="adrGleich=nein">Adresse des Gebäudes<input type="text" name="gebAdresse"></label>
+      <label class="f">Gebäudeart
+        <select name="gebArt"><option></option><option>Einfamilienhaus</option><option>Zweifamilienhaus</option><option>Reihenhaus / Doppelhaushälfte</option><option>Mehrfamilienhaus</option><option>Eigentumswohnung</option><option>Nichtwohngebäude</option></select>
+      </label>
+      <label class="f">Baujahr des Gebäudes<input type="number" name="baujahr" min="1500" max="2030"></label>
+      <label class="f">Anzahl Wohneinheiten im Gebäude<input type="number" name="weGesamt" min="1" value="1"></label>
+      <label class="f">Davon an die neue Heizung angeschlossen<input type="number" name="weHeizung" min="1" value="1"></label>
+      <label class="f">Beheizte Wohnfläche (m²)<input type="number" name="wohnflaeche" min="0"></label>
+      <label class="f">Bauantrag vor dem 01.01.2024 gestellt?
+        <select name="bauantrag"><option></option><option>ja</option><option>nein</option><option>weiß nicht</option></select>
+        <small>Heizungstausch-Förderung gibt es nur für Bestandsgebäude.</small>
+      </label>
+      <fieldset class="full">
+        <legend>Weitere Angaben</legend>
+        <div class="choices col">
+          <label><input type="checkbox" name="vorsteuer" value="ja"> Ich bin für diese Maßnahme vorsteuerabzugsberechtigt</label>
+          <label><input type="checkbox" name="denkmal" value="ja"> Das Gebäude steht unter Denkmalschutz</label>
+          <label><input type="checkbox" name="vorfoerderung" value="ja"> Für dieses Gebäude wurde bereits eine Heizungsförderung (KfW 458 / BAFA) beantragt</label>
+          <label><input type="checkbox" name="isfp" value="ja"> Es liegt ein individueller Sanierungsfahrplan (iSFP) vor</label>
+        </div>
+      </fieldset>
+      <label class="f full show-if" data-if="vorfoerderung=ja">Wann und wofür?<input type="text" name="vorfoerderungText"></label>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="step" data-title="Alte Heizung">
+    <h2>3. Bestehende Heizung</h2>
+    <p class="lead">Diese Angaben entscheiden u. a. über den Klimageschwindigkeits-Bonus.</p>
+    <div class="grid">
+      <label class="f">Energieträger der alten Heizung
+        <select name="altEnergie">
+          <option></option><option>Heizöl</option><option>Erdgas (Zentralheizung)</option><option>Gas-Etagenheizung</option><option>Flüssiggas</option><option>Kohle</option><option>Nachtspeicher</option><option>Biomasse (Holz/Pellets)</option><option>Fernwärme</option><option>Wärmepumpe</option><option>Sonstiges</option>
+        </select>
+      </label>
+      <label class="f">Jahr der Inbetriebnahme<input type="number" name="altJahr" min="1950" max="2030">
+        <small>Steht auf dem Typenschild oder im Schornsteinfeger-Protokoll.</small>
+      </label>
+      <label class="f">Hersteller / Typ (falls bekannt)<input type="text" name="altTyp"></label>
+      <label class="f">Nennleistung (kW)<input type="number" name="altLeistung" min="0" step="0.1"></label>
+      <fieldset class="full">
+        <legend>Ist die alte Heizung noch funktionstüchtig?</legend>
+        <div class="choices">
+          <label><input type="radio" name="altFunktion" value="ja"> Ja</label>
+          <label><input type="radio" name="altFunktion" value="nein"> Nein, defekt</label>
+        </div>
+      </fieldset>
+      <label class="f">Jahresverbrauch<input type="text" name="altVerbrauch" placeholder="z. B. 2.500 l Öl oder 22.000 kWh Gas"></label>
+      <label class="f">Warmwasser
+        <select name="warmwasser"><option></option><option>über die Heizung (zentral)</option><option>dezentral (Durchlauferhitzer/Boiler)</option><option>Solarthermie-Unterstützung</option></select>
+      </label>
+      <fieldset class="full">
+        <legend>Welche Heizflächen sind vorhanden?</legend>
+        <div class="choices">
+          <label><input type="checkbox" name="heizflaechen" value="Heizkörper"> Heizkörper</label>
+          <label><input type="checkbox" name="heizflaechen" value="Fußbodenheizung"> Fußbodenheizung</label>
+          <label><input type="checkbox" name="heizflaechen" value="Wandheizung"> Wandheizung</label>
+          <label><input type="checkbox" name="heizflaechen" value="Einzelöfen"> Einzelöfen</label>
+        </div>
+      </fieldset>
+      <fieldset class="full">
+        <legend>Wird die alte Heizung ausgebaut bzw. stillgelegt?</legend>
+        <div class="choices">
+          <label><input type="radio" name="altRueckbau" value="ja"> Ja</label>
+          <label><input type="radio" name="altRueckbau" value="nein"> Nein, bleibt als Ergänzung</label>
+        </div>
+      </fieldset>
+    </div>
+    <div class="box ok hidden" id="klimaHint"></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="step" data-title="Neue Heizung">
+    <h2>4. Geplante Heizung</h2>
+    <p class="lead">Welche Anlage soll eingebaut werden?</p>
+    <div class="grid">
+      <fieldset class="full">
+        <legend>Art der neuen Heizung</legend>
+        <div class="choices col">
+          <label><input type="radio" name="neuArt" value="wp-luft"> Luft/Wasser-Wärmepumpe</label>
+          <label><input type="radio" name="neuArt" value="wp-sole"> Sole/Wasser-Wärmepumpe (Erdwärme)</label>
+          <label><input type="radio" name="neuArt" value="wp-wasser"> Wasser/Wasser-Wärmepumpe (Grundwasser/Abwasser)</label>
+          <label><input type="radio" name="neuArt" value="biomasse"> Biomasseheizung (Pellets, Hackschnitzel, Scheitholz)</label>
+          <label><input type="radio" name="neuArt" value="netz"> Anschluss an ein Wärmenetz / Fernwärme</label>
+          <label><input type="radio" name="neuArt" value="solar"> Solarthermie</label>
+          <label><input type="radio" name="neuArt" value="sonst"> Sonstiges (Brennstoffzelle, Hybrid …)</label>
+        </div>
+      </fieldset>
+
+      <fieldset class="full show-if" data-if="neuArt=wp-luft">
+        <legend>Kältemittel der Wärmepumpe</legend>
+        <div class="choices">
+          <label><input type="radio" name="kaeltemittel" value="natuerlich"> natürlich (z. B. R290 Propan)</label>
+          <label><input type="radio" name="kaeltemittel" value="synthetisch"> synthetisch (z. B. R32, R410A)</label>
+          <label><input type="radio" name="kaeltemittel" value="unbekannt"> weiß ich nicht</label>
+        </div>
+      </fieldset>
+      <fieldset class="full show-if" data-if="neuArt=biomasse">
+        <legend>Staubemission der Anlage</legend>
+        <div class="choices col">
+          <label><input type="checkbox" name="staubarm" value="ja"> Staubemission höchstens 2,5 mg/m³ (Emissionsminderungs-Zuschlag)</label>
+          <label><input type="checkbox" name="biomasseKombi" value="ja"> Kombiniert mit Solarthermie oder Wärmepumpe für Warmwasser</label>
+        </div>
+      </fieldset>
+
+      <label class="f">Hersteller / Modell<input type="text" name="neuModell"></label>
+      <label class="f">Heizleistung (kW)<input type="number" name="neuLeistung" min="0" step="0.1"></label>
+      <label class="f">Ausführender Fachbetrieb<input type="text" name="fachbetrieb"></label>
+      <label class="f">Ansprechpartner / Telefon Fachbetrieb<input type="text" name="fachbetriebKontakt"></label>
+      <label class="f">Stand der Beauftragung
+        <select name="auftragStand">
+          <option></option>
+          <option>Noch kein Angebot</option>
+          <option>Angebot liegt vor</option>
+          <option>Liefer-/Leistungsvertrag mit aufschiebender Bedingung unterschrieben</option>
+          <option>Auftrag ohne Bedingung unterschrieben</option>
+          <option>Arbeiten bereits begonnen</option>
+        </select>
+      </label>
+      <label class="f">Geplanter Einbau (Monat/Jahr)<input type="text" name="einbau" placeholder="z. B. 03/2027"></label>
+    </div>
+    <div class="box warn hidden" id="auftragWarn"></div>
+    <div class="box info hidden" id="wpHint">
+      <strong>Hinweis Wärmepumpe:</strong> Die Wärmepumpe muss beim Netzbetreiber angemeldet werden (steuerbare Verbrauchseinrichtung nach § 14a EnWG). Für die Förderung sind u. a. eine Jahresarbeitszahl von mind. 3,0 und die Einhaltung der Geräusch-Anforderungen nachzuweisen. Der Fachbetrieb bestätigt dies in der Regel.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="step" data-title="Kosten & Förderung">
+    <h2>5. Kosten &amp; Förderung</h2>
+    <p class="lead">Grundlage ist das Angebot Ihres Fachbetriebs. Die Berechnung ist eine unverbindliche Schätzung.</p>
+    <div class="grid">
+      <label class="f">Kosten Heizungsanlage inkl. Einbau (€)
+        <input type="number" name="kostenHeizung" min="0" step="100">
+        <small id="kostenArt">brutto (inkl. MwSt.)</small>
+      </label>
+      <label class="f">Umfeldmaßnahmen (€)
+        <input type="number" name="kostenUmfeld" min="0" step="100">
+        <small>z. B. Heizkörpertausch, Fundament, Elektrik, Demontage alte Anlage, Energieberatung</small>
+      </label>
+      <label class="f full">Summe förderfähige Kosten laut Angebot
+        <input type="text" id="kostenSumme" readonly tabindex="-1">
+      </label>
+
+      <fieldset class="full">
+        <legend>Bewohnen Sie das Gebäude (bzw. eine Wohnung darin) selbst?</legend>
+        <div class="choices">
+          <label><input type="radio" name="selbst" value="ja"> Ja, als Hauptwohnsitz</label>
+          <label><input type="radio" name="selbst" value="nein"> Nein</label>
+        </div>
+      </fieldset>
+      <label class="f show-if" data-if="selbst=ja">Anzahl selbst bewohnter Wohneinheiten
+        <input type="number" name="weSelbst" min="1" value="1">
+      </label>
+      <fieldset class="full show-if" data-if="selbst=ja">
+        <legend>Zu versteuerndes Haushaltseinkommen (Durchschnitt der Steuerbescheide aus dem 2. und 3. Jahr vor Antragstellung)</legend>
+        <div class="choices col">
+          <label><input type="radio" name="einkommen" value="unter"> bis 40.000 € pro Jahr</label>
+          <label><input type="radio" name="einkommen" value="ueber"> über 40.000 € pro Jahr</label>
+          <label><input type="radio" name="einkommen" value="unbekannt"> weiß ich nicht / möchte ich nicht angeben</label>
+        </div>
+        <p class="hint">Das zu versteuernde Einkommen steht im Steuerbescheid und ist meist deutlich niedriger als das Bruttoeinkommen (Kinderfreibeträge u. a. werden abgezogen).</p>
+      </fieldset>
+      <fieldset class="full">
+        <legend>Zusätzlich Interesse an …</legend>
+        <div class="choices">
+          <label><input type="checkbox" name="kredit" value="ja"> Ergänzungskredit KfW 358/359</label>
+          <label><input type="checkbox" name="weitereMassnahmen" value="ja"> weiteren Sanierungsmaßnahmen (Dämmung, Fenster …)</label>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="calc" id="calc">
+      <h3>Ihre voraussichtliche Förderung</h3>
+      <table>
+        <tbody id="calcBody"></tbody>
+      </table>
+      <p class="note" id="calcNote"></p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="step" data-title="Unterlagen">
+    <h2>6. Unterlagen</h2>
+    <p class="lead">Bitte haken Sie ab, was Sie uns bereits mitschicken können. Fehlende Unterlagen können nachgereicht werden.</p>
+    <div class="choices col doclist">
+      <label><input type="checkbox" name="docs" value="Angebot"> <span>Angebot(e) des Fachbetriebs<small>vollständig, mit Positionen und Preisen</small></span></label>
+      <label><input type="checkbox" name="docs" value="Vertrag"> <span>Liefer-/Leistungsvertrag mit aufschiebender Bedingung<small>Auftrag gilt erst ab Förderzusage – Pflicht vor Antragstellung</small></span></label>
+      <label><input type="checkbox" name="docs" value="Datenblatt"> <span>Technisches Datenblatt der neuen Heizung</span></label>
+      <label><input type="checkbox" name="docs" value="Schornsteinfeger"> <span>Schornsteinfeger-Protokoll / Typenschild-Foto der alten Heizung<small>Nachweis für Alter und Energieträger</small></span></label>
+      <label><input type="checkbox" name="docs" value="Grundbuch"> <span>Grundbuchauszug oder Kaufvertrag<small>Nachweis des Eigentums</small></span></label>
+      <label><input type="checkbox" name="docs" value="Meldebescheinigung" class="docSelbst"> <span>Meldebescheinigung<small>Nachweis Hauptwohnsitz (für Klimageschwindigkeits-Bonus)</small></span></label>
+      <label><input type="checkbox" name="docs" value="Steuerbescheide" class="docEink"> <span>Einkommensteuerbescheide aller Haushaltsmitglieder<small>aus dem 2. und 3. Jahr vor Antragstellung (für Einkommens-Bonus)</small></span></label>
+      <label><input type="checkbox" name="docs" value="Einverstaendnis"> <span>Einverständniserklärung weiterer Eigentümer / WEG-Beschluss</span></label>
+      <label><input type="checkbox" name="docs" value="Fotos"> <span>Fotos: Heizraum, alte Heizung, geplanter Aufstellort, Zählerschrank</span></label>
+      <label><input type="checkbox" name="docs" value="Grundriss"> <span>Grundrisse / Pläne (falls vorhanden)</span></label>
+    </div>
+    <label class="f" style="margin-top:16px">Anmerkungen / Fragen an uns
+      <textarea name="anmerkungen"></textarea>
+    </label>
+  </section>
+
+  <!-- 7 -->
+  <section class="step" data-title="Wichtige Regeln">
+    <h2>7. Das Wichtigste auf einen Blick</h2>
+    <p class="lead">Damit die Förderung nicht verloren geht:</p>
+    <ul class="rules">
+      <li><strong>Erst Antrag, dann Auftrag.</strong> Vor Antragstellung darf nur ein Vertrag mit <em>aufschiebender oder auflösender Bedingung</em> (Förderzusage) unterschrieben werden. Mit den Arbeiten darf erst nach Antragstellung begonnen werden.</li>
+      <li><strong>Antrag im KfW-Portal „Meine KfW“.</strong> Wir unterstützen Sie bei der Registrierung und Antragstellung.</li>
+      <li><strong>Frist für die Umsetzung:</strong> 36 Monate ab Förderzusage.</li>
+      <li><strong>Nachweis nach Abschluss:</strong> Rechnungen und Bestätigung des Fachbetriebs werden im Portal hochgeladen – spätestens 6 Monate nach Ablauf der Umsetzungsfrist.</li>
+      <li><strong>Auszahlung</strong> erfolgt erst nach Prüfung der Nachweise, direkt auf Ihr Konto. Die Rechnungen müssen per Überweisung bezahlt werden (keine Barzahlung).</li>
+      <li><strong>Höchstgrenze:</strong> Pro Kalenderjahr und Wohneinheit gelten Höchstbeträge für förderfähige Kosten – bei weiteren Maßnahmen im selben Jahr bitte vorher mit uns abstimmen.</li>
+    </ul>
+    <div class="box info">Die Förderbedingungen können sich kurzfristig ändern. Maßgeblich sind die zum Zeitpunkt der Antragstellung gültigen Richtlinien der KfW.</div>
+  </section>
+
+  <!-- 8 -->
+  <section class="step" data-title="Abschluss">
+    <h2>8. Bestätigung &amp; Versand</h2>
+    <p class="lead">Bitte prüfen, unterschreiben und an uns senden.</p>
+    <div class="choices col">
+      <label><input type="checkbox" name="richtig" value="ja"> Ich bestätige, dass meine Angaben nach bestem Wissen vollständig und richtig sind.</label>
+      <label><input type="checkbox" name="datenschutz" value="ja"> <span id="dsText"></span></label>
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <label class="f">Ort<input type="text" name="unterschriftOrt"></label>
+      <label class="f">Datum<input type="date" name="unterschriftDatum"></label>
+    </div>
+    <p style="margin:16px 0 6px;font-weight:550;font-size:.9rem">Unterschrift</p>
+    <div class="sig-wrap"><canvas id="sig"></canvas><span class="ph" id="sigPh">Hier mit Maus oder Finger unterschreiben</span></div>
+    <button type="button" class="b ghost no-print" id="sigClear" style="margin-top:8px">Unterschrift löschen</button>
+
+    <div class="box info no-print" style="margin-top:20px">
+      <strong>So senden Sie uns den Fragebogen:</strong><br>
+      1. „Als PDF speichern“ klicken und im Druckdialog <em>Als PDF speichern</em> wählen.<br>
+      2. „E-Mail öffnen“ klicken und das PDF sowie Ihre Unterlagen als Anhang hinzufügen.
+    </div>
+    <div class="actions">
+      <button type="button" class="b primary" id="btnPrint">Als PDF speichern / drucken</button>
+      <button type="button" class="b" id="btnMail">E-Mail öffnen</button>
+      <button type="button" class="b ghost" id="btnExport">Eingaben als Datei sichern</button>
+      <button type="button" class="b ghost" id="btnImport">Datei laden</button>
+      <button type="button" class="b ghost" id="btnReset">Alles löschen</button>
+      <input type="file" id="importFile" accept="application/json,.json" class="hidden">
+    </div>
+  </section>
+
+  </form>
+
+  <div class="navbtns">
+    <button type="button" class="b" id="prevBtn">← Zurück</button>
+    <button type="button" class="b primary" id="nextBtn">Weiter →</button>
+  </div>
+</main>
+
+<footer>
+  <p class="print-only" id="printStamp"></p>
+  <p id="footerText"></p>
+  <p class="no-print">Ihre Eingaben werden ausschließlich lokal in diesem Browser gespeichert und nicht an einen Server übertragen.</p>
+</footer>
+
+<script>
+/* ================================================================
+   FIRMENDATEN – hier anpassen
+   ================================================================ */
+const CONFIG = {
+  firma:      "Mößner Gebäudeenergieberatung",
+  inhaber:    "",                           // z. B. "Dipl.-Ing. Max Mustermann"
+  strasse:    "Sandfeld 8",
+  ort:        "24873 Havetoft",
+  telefon:    "0152 36192988",
+  email:      "Moessner.Energieberatung@gmx.de",
+  website:    "",
+  zusatz:     "",                           // z. B. "Energieeffizienz-Experte (dena-Liste)"
+  mailBetreff:"Fragebogen Heizungstausch"
+};
+
+/* Fördersätze BEG EM (Heizungstausch) – Stand 2026, bei Änderungen hier anpassen */
+const FOERDER = {
+  grund: 30, klima: 20, einkommen: 30, effizienz: 5, max: 70,
+  einkommensgrenze: 40000,
+  kostenWE1: 30000, kostenWE2bis6: 15000, kostenWEab7: 8000,
+  biomasseZuschlag: 2500,
+  klimaMindestalter: 20
+};
+
+/* ================================================================ */
+const STORE = "heizungstausch-fragebogen-v1";
+const form = document.getElementById("form");
+const steps = [...document.querySelectorAll("section.step")];
+let current = 0;
+
+/* Firmenangaben einsetzen */
+(function(){
+  const c = CONFIG, esc = s => String(s).replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+  const lines = [c.inhaber, c.strasse, c.ort, c.telefon && "Mobil " + c.telefon, c.email].filter(Boolean).map(esc);
+  document.getElementById("companyBox").innerHTML = "<strong>" + esc(c.firma) + "</strong>" + lines.join("<br>");
+  document.getElementById("footerText").textContent =
+    [c.firma, c.zusatz, c.strasse, c.ort, c.telefon, c.email, c.website].filter(Boolean).join(" · ");
+  document.getElementById("dsText").textContent =
+    "Ich bin einverstanden, dass " + c.firma + " meine Angaben zur Beratung und Förderantragstellung verarbeitet.";
+})();
+
+/* Schritt-Navigation */
+const nav = document.getElementById("stepNav");
+steps.forEach((s, i) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = (i + 1) + ". " + s.dataset.title;
+  b.onclick = () => go(i);
+  nav.appendChild(b);
+});
+function go(i){
+  current = Math.max(0, Math.min(steps.length - 1, i));
+  steps.forEach((s, k) => s.classList.toggle("active", k === current));
+  [...nav.children].forEach((b, k) => {
+    b.classList.toggle("active", k === current);
+    b.classList.toggle("done", k < current);
+  });
+  nav.children[current].scrollIntoView({block:"nearest", inline:"center"});
+  document.getElementById("progressBar").style.width = ((current + 1) / steps.length * 100) + "%";
+  document.getElementById("prevBtn").style.visibility = current === 0 ? "hidden" : "visible";
+  document.getElementById("nextBtn").style.visibility = current === steps.length - 1 ? "hidden" : "visible";
+  if (current === steps.length - 1) sizeCanvas();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+document.getElementById("prevBtn").onclick = () => go(current - 1);
+document.getElementById("nextBtn").onclick = () => go(current + 1);
+
+/* Daten lesen / schreiben */
+function getData(){
+  const d = {};
+  for (const el of form.elements) {
+    if (!el.name) continue;
+    if (el.type === "checkbox") {
+      const group = form.querySelectorAll('input[type=checkbox][name="' + el.name + '"]');
+      if (group.length > 1) { (d[el.name] ||= []); if (el.checked) d[el.name].push(el.value); }
+      else d[el.name] = el.checked ? el.value : "";
+    } else if (el.type === "radio") {
+      if (el.checked) d[el.name] = el.value; else if (!(el.name in d)) d[el.name] = "";
+    } else d[el.name] = el.value;
+  }
+  return d;
+}
+function setData(d){
+  for (const el of form.elements) {
+    if (!el.name || !(el.name in d)) continue;
+    const v = d[el.name];
+    if (el.type === "checkbox") el.checked = Array.isArray(v) ? v.includes(el.value) : v === el.value;
+    else if (el.type === "radio") el.checked = v === el.value;
+    else el.value = v;
+  }
+}
+const num = v => { const n = parseFloat(String(v).replace(",", ".")); return isFinite(n) ? n : 0; };
+const eur = n => n.toLocaleString("de-DE", {style:"currency", currency:"EUR", maximumFractionDigits:0});
+
+let saveTimer;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({data:getData(), sig:sigData, step:current, t:Date.now()}));
+      document.getElementById("savedInfo").textContent = "Zwischengespeichert " + new Date().toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"});
+    } catch(e) {}
+  }, 300);
+}
+
+/* Bedingte Anzeige + Berechnung */
+function update(){
+  const d = getData();
+
+  document.querySelectorAll(".show-if").forEach(el => {
+    const [k, v] = el.dataset.if.split("=");
+    const val = d[k];
+    el.classList.toggle("hidden", !(Array.isArray(val) ? val.includes(v) : val === v));
+  });
+
+  const isWP = /^wp-/.test(d.neuArt);
+  document.getElementById("wpHint").classList.toggle("hidden", !isWP);
+
+  const aw = document.getElementById("auftragWarn");
+  if (d.auftragStand === "Auftrag ohne Bedingung unterschrieben" || d.auftragStand === "Arbeiten bereits begonnen") {
+    aw.innerHTML = "<strong>Achtung:</strong> Wenn der Auftrag ohne aufschiebende/auflösende Bedingung unterschrieben wurde oder die Arbeiten bereits begonnen haben, ist eine Förderung in der Regel ausgeschlossen. Bitte kontaktieren Sie uns umgehend.";
+    aw.classList.remove("hidden");
+  } else aw.classList.add("hidden");
+
+  document.getElementById("kostenArt").textContent = d.vorsteuer ? "netto (ohne MwSt., da vorsteuerabzugsberechtigt)" : "brutto (inkl. MwSt.)";
+  const kosten = num(d.kostenHeizung) + num(d.kostenUmfeld);
+  document.getElementById("kostenSumme").value = kosten ? eur(kosten) : "";
+
+  /* Förderberechnung */
+  const n = Math.max(1, Math.round(num(d.weHeizung)) || 1);
+  const cap = FOERDER.kostenWE1 + Math.min(Math.max(n - 1, 0), 5) * FOERDER.kostenWE2bis6 + Math.max(n - 6, 0) * FOERDER.kostenWEab7;
+  const foerderfaehig = Math.min(kosten, cap);
+
+  const selbst = d.selbst === "ja";
+  const nSelbst = selbst ? Math.min(n, Math.max(1, Math.round(num(d.weSelbst)) || 1)) : 0;
+  const anteilSelbst = foerderfaehig * nSelbst / n;
+
+  const jahr = new Date().getFullYear();
+  const altJahr = num(d.altJahr);
+  const alt = d.altEnergie || "";
+  const funktioniert = d.altFunktion === "ja";
+  const immerKlima = ["Heizöl", "Kohle", "Nachtspeicher", "Gas-Etagenheizung"].includes(alt);
+  const alterKlima = ["Erdgas (Zentralheizung)", "Flüssiggas", "Biomasse (Holz/Pellets)"].includes(alt) && altJahr > 0 && (jahr - altJahr) >= FOERDER.klimaMindestalter;
+  const biomasseOhneKombi = d.neuArt === "biomasse" && !d.biomasseKombi;
+  const klima = selbst && funktioniert && (immerKlima || alterKlima) && !biomasseOhneKombi;
+  const eink = selbst && d.einkommen === "unter";
+  const eff = (d.neuArt === "wp-sole" || d.neuArt === "wp-wasser") || (d.neuArt === "wp-luft" && d.kaeltemittel === "natuerlich");
+
+  const kh = document.getElementById("klimaHint");
+  if (alt) {
+    let t;
+    if (!selbst && (immerKlima || alterKlima)) t = "Der Klimageschwindigkeits-Bonus käme grundsätzlich in Frage, gilt aber nur für selbst bewohnte Wohneinheiten (siehe Schritt 5).";
+    else if (immerKlima || alterKlima) t = funktioniert ? "Voraussichtlich Anspruch auf den Klimageschwindigkeits-Bonus (+" + FOERDER.klima + " %), sofern Sie das Gebäude selbst bewohnen." : "Der Klimageschwindigkeits-Bonus setzt eine noch funktionstüchtige Heizung voraus.";
+    else if (["Erdgas (Zentralheizung)", "Flüssiggas", "Biomasse (Holz/Pellets)"].includes(alt)) t = "Für den Klimageschwindigkeits-Bonus muss diese Heizung mindestens " + FOERDER.klimaMindestalter + " Jahre alt sein. Bitte Inbetriebnahmejahr angeben.";
+    if (t) { kh.textContent = t; kh.classList.remove("hidden"); } else kh.classList.add("hidden");
+  } else kh.classList.add("hidden");
+
+  const rows = [];
+  const pctFor = [];
+  rows.push(["Förderfähige Kosten (Höchstgrenze " + eur(cap) + " bei " + n + " WE)", eur(foerderfaehig), true]);
+  rows.push(["Grundförderung " + FOERDER.grund + " %", eur(foerderfaehig * FOERDER.grund / 100), true]);
+  rows.push(["Effizienz-Bonus " + FOERDER.effizienz + " %" + (eff ? "" : " – nur WP mit natürl. Kältemittel oder Erdreich/Wasser"), eur(eff ? foerderfaehig * FOERDER.effizienz / 100 : 0), eff]);
+
+  // Boni für selbst genutzten Anteil; Summe begrenzt auf max. %
+  const pctSelbst = Math.min(FOERDER.max, FOERDER.grund + (eff ? FOERDER.effizienz : 0) + (klima ? FOERDER.klima : 0) + (eink ? FOERDER.einkommen : 0));
+  const pctFremd = Math.min(FOERDER.max, FOERDER.grund + (eff ? FOERDER.effizienz : 0));
+  const bonusRoh = (klima ? FOERDER.klima : 0) + (eink ? FOERDER.einkommen : 0);
+  const bonusWirksam = pctSelbst - pctFremd;
+  const kappung = bonusRoh > bonusWirksam;
+
+  const klimaBetrag = klima ? anteilSelbst * Math.min(FOERDER.klima, bonusWirksam) / 100 : 0;
+  const einkBetrag = eink ? anteilSelbst * (bonusWirksam - (klima ? Math.min(FOERDER.klima, bonusWirksam) : 0)) / 100 : 0;
+  rows.push(["Klimageschwindigkeits-Bonus " + FOERDER.klima + " %" + (klima ? (n > 1 ? " (auf selbst bewohnten Anteil)" : "") : " – nicht erfüllt"), eur(klimaBetrag), klima]);
+  rows.push(["Einkommens-Bonus " + FOERDER.einkommen + " %" + (eink ? (kappung ? " (gekappt, max. " + FOERDER.max + " % gesamt)" : "") : d.einkommen === "unbekannt" ? " – Einkommen unbekannt" : " – nicht erfüllt"), eur(einkBetrag), eink]);
+
+  const biom = d.neuArt === "biomasse" && d.staubarm;
+  if (d.neuArt === "biomasse") rows.push(["Emissionsminderungs-Zuschlag (pauschal)", eur(biom ? Math.min(FOERDER.biomasseZuschlag, kosten) : 0), biom]);
+
+  const zuschuss = foerderfaehig * pctFremd / 100 + klimaBetrag + einkBetrag + (biom ? Math.min(FOERDER.biomasseZuschlag, kosten) : 0);
+  const quote = foerderfaehig ? zuschuss / foerderfaehig * 100 : pctSelbst;
+
+  const body = document.getElementById("calcBody");
+  body.innerHTML = "";
+  for (const [label, val, on] of rows) {
+    const tr = document.createElement("tr");
+    if (!on) tr.className = "off";
+    tr.innerHTML = "<td></td><td></td>";
+    tr.children[0].textContent = label; tr.children[1].textContent = val;
+    body.appendChild(tr);
+  }
+  const sum = document.createElement("tr");
+  sum.className = "sum";
+  sum.innerHTML = "<td></td><td></td>";
+  sum.children[0].textContent = "Voraussichtlicher Zuschuss (" + quote.toLocaleString("de-DE", {maximumFractionDigits:1}) + " %)";
+  sum.children[1].textContent = eur(zuschuss);
+  body.appendChild(sum);
+  const eigen = Math.max(0, kosten - zuschuss);
+  const tr = document.createElement("tr");
+  tr.innerHTML = "<td>Verbleibender Eigenanteil</td><td></td>";
+  tr.children[1].textContent = eur(eigen);
+  body.appendChild(tr);
+
+  document.getElementById("calcNote").textContent = kosten
+    ? "Unverbindliche Schätzung auf Basis der Förderrichtlinie BEG EM (Stand " + jahr + "). Maßgeblich ist allein die Förderzusage der KfW. Die Förderung ist auf " + FOERDER.max + " % begrenzt."
+    : "Bitte Kosten eingeben, um die Förderung zu berechnen.";
+
+  window._summary = {kosten, foerderfaehig, zuschuss, eigen, quote};
+}
+
+form.addEventListener("input", () => { update(); save(); });
+form.addEventListener("change", () => { update(); save(); });
+
+/* Unterschrift */
+const cv = document.getElementById("sig"), ctx = cv.getContext("2d");
+let sigData = "", drawing = false, last = null;
+function sizeCanvas(){
+  const r = cv.getBoundingClientRect();
+  if (!r.width) return;
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#10233f";
+  if (sigData) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, r.width, r.height); img.src = sigData; }
+  document.getElementById("sigPh").style.display = sigData ? "none" : "";
+}
+const pos = e => { const r = cv.getBoundingClientRect(); return {x:e.clientX - r.left, y:e.clientY - r.top}; };
+cv.addEventListener("pointerdown", e => { drawing = true; last = pos(e); cv.setPointerCapture(e.pointerId); document.getElementById("sigPh").style.display = "none"; });
+cv.addEventListener("pointermove", e => {
+  if (!drawing) return;
+  const p = pos(e);
+  ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+  last = p;
+});
+const endDraw = () => { if (!drawing) return; drawing = false; sigData = cv.toDataURL("image/png"); save(); };
+cv.addEventListener("pointerup", endDraw);
+cv.addEventListener("pointercancel", endDraw);
+document.getElementById("sigClear").onclick = () => { sigData = ""; ctx.clearRect(0, 0, cv.width, cv.height); document.getElementById("sigPh").style.display = ""; save(); };
+window.addEventListener("resize", () => { if (current === steps.length - 1) sizeCanvas(); });
+
+/* Aktionen */
+document.getElementById("btnPrint").onclick = () => {
+  document.getElementById("printStamp").textContent = "Erstellt am " + new Date().toLocaleString("de-DE");
+  window.print();
+};
+window.addEventListener("beforeprint", () => { steps.forEach(s => s.classList.add("active")); });
+window.addEventListener("afterprint", () => go(current));
+
+document.getElementById("btnMail").onclick = () => {
+  const d = getData(), s = window._summary || {};
+  const name = [d.vorname, d.nachname].filter(Boolean).join(" ");
+  const L = [];
+  L.push("Guten Tag,", "", "anbei mein ausgefüllter Fragebogen zum Heizungstausch (PDF im Anhang).", "");
+  L.push("Name: " + (name || "-"));
+  L.push("Anschrift: " + [d.strasse, [d.plz, d.ort].filter(Boolean).join(" ")].filter(Boolean).join(", "));
+  L.push("Telefon: " + (d.telefon || "-"));
+  L.push("Gebäude: " + (d.gebArt || "-") + ", Baujahr " + (d.baujahr || "-") + ", " + (d.weHeizung || 1) + " WE");
+  L.push("Alte Heizung: " + (d.altEnergie || "-") + (d.altJahr ? " (" + d.altJahr + ")" : ""));
+  const art = form.querySelector('input[name=neuArt]:checked');
+  L.push("Neue Heizung: " + (art ? art.parentElement.textContent.trim() : "-"));
+  if (s.kosten) L.push("Kosten: " + eur(s.kosten) + " – geschätzter Zuschuss: " + eur(s.zuschuss));
+  L.push("", "Beigefügte Unterlagen: " + ((d.docs || []).join(", ") || "-"));
+  if (d.anmerkungen) L.push("", "Anmerkungen: " + d.anmerkungen);
+  L.push("", "Mit freundlichen Grüßen", name);
+  const subject = CONFIG.mailBetreff + (name ? " – " + name : "");
+  location.href = "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(L.join("\n"));
+};
+
+document.getElementById("btnExport").onclick = () => {
+  const blob = new Blob([JSON.stringify({data:getData(), sig:sigData}, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  const d = getData();
+  a.href = URL.createObjectURL(blob);
+  a.download = "Fragebogen-Heizungstausch" + (d.nachname ? "-" + d.nachname.replace(/[^\wäöüÄÖÜß-]/g, "") : "") + ".json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+document.getElementById("btnImport").onclick = () => document.getElementById("importFile").click();
+document.getElementById("importFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(t => {
+    try { const o = JSON.parse(t); form.reset(); setData(o.data || {}); sigData = o.sig || ""; update(); save(); sizeCanvas(); alert("Eingaben geladen."); }
+    catch(err) { alert("Die Datei konnte nicht gelesen werden."); }
+  });
+  e.target.value = "";
+};
+document.getElementById("btnReset").onclick = () => {
+  if (!confirm("Wirklich alle Eingaben löschen?")) return;
+  try { localStorage.removeItem(STORE); } catch(e) {}
+  form.reset(); sigData = ""; ctx.clearRect(0, 0, cv.width, cv.height);
+  document.getElementById("savedInfo").textContent = "";
+  update(); go(0);
+};
+
+/* Start */
+(function(){
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(STORE) || "null"); } catch(e) {}
+  if (s && s.data) { setData(s.data); sigData = s.sig || ""; }
+  if (!form.elements.unterschriftDatum.value) form.elements.unterschriftDatum.value = new Date().toISOString().slice(0, 10);
+  update();
+  go(s && Number.isInteger(s.step) ? s.step : 0);
+})();
+</script>
+</body>
+</html>
