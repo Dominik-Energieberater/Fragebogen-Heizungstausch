@@ -197,9 +197,9 @@
       <label class="f">Anzahl Wohneinheiten im Gebäude<input type="number" name="weGesamt" min="1" value="1"></label>
       <label class="f">Davon an die neue Heizung angeschlossen<input type="number" name="weHeizung" min="1" value="1"></label>
       <label class="f">Beheizte Wohnfläche (m²)<input type="number" name="wohnflaeche" min="0"></label>
-      <label class="f">Bauantrag vor dem 01.01.2024 gestellt?
-        <select name="bauantrag"><option></option><option>ja</option><option>nein</option><option>weiß nicht</option></select>
-        <small>Heizungstausch-Förderung gibt es nur für Bestandsgebäude.</small>
+      <label class="f">Liegt der Bauantrag mindestens 5 Jahre zurück?
+        <select name="bestand5"><option></option><option>ja</option><option>nein</option><option>weiß nicht</option></select>
+        <small>Heizungstausch-Förderung gibt es nur für Bestandsgebäude: Bauantrag bzw. Bauanzeige muss bei Antragstellung mindestens 5 Jahre zurückliegen.</small>
       </label>
       <fieldset class="full">
         <legend>Weitere Angaben</legend>
@@ -207,7 +207,6 @@
           <label><input type="checkbox" name="vorsteuer" value="ja"> Ich bin für diese Maßnahme vorsteuerabzugsberechtigt</label>
           <label><input type="checkbox" name="denkmal" value="ja"> Das Gebäude steht unter Denkmalschutz</label>
           <label><input type="checkbox" name="vorfoerderung" value="ja"> Für dieses Gebäude wurde bereits eine Heizungsförderung (KfW 458 / BAFA) beantragt</label>
-          <label><input type="checkbox" name="isfp" value="ja"> Es liegt ein individueller Sanierungsfahrplan (iSFP) vor</label>
         </div>
       </fieldset>
       <label class="f full show-if" data-if="vorfoerderung=ja">Wann und wofür?<input type="text" name="vorfoerderungText"></label>
@@ -278,22 +277,6 @@
         </div>
       </fieldset>
 
-      <fieldset class="full show-if" data-if="neuArt=wp-luft">
-        <legend>Kältemittel der Wärmepumpe</legend>
-        <div class="choices">
-          <label><input type="radio" name="kaeltemittel" value="natuerlich"> natürlich (z. B. R290 Propan)</label>
-          <label><input type="radio" name="kaeltemittel" value="synthetisch"> synthetisch (z. B. R32, R410A)</label>
-          <label><input type="radio" name="kaeltemittel" value="unbekannt"> weiß ich nicht</label>
-        </div>
-      </fieldset>
-      <fieldset class="full show-if" data-if="neuArt=biomasse">
-        <legend>Staubemission der Anlage</legend>
-        <div class="choices col">
-          <label><input type="checkbox" name="staubarm" value="ja"> Staubemission höchstens 2,5 mg/m³ (Emissionsminderungs-Zuschlag)</label>
-          <label><input type="checkbox" name="biomasseKombi" value="ja"> Kombiniert mit Solarthermie oder Wärmepumpe für Warmwasser</label>
-        </div>
-      </fieldset>
-
       <label class="f">Hersteller / Modell<input type="text" name="neuModell"></label>
       <label class="f">Heizleistung (kW)<input type="number" name="neuLeistung" min="0" step="0.1"></label>
       <label class="f">Ausführender Fachbetrieb<input type="text" name="fachbetrieb"></label>
@@ -303,7 +286,7 @@
           <option></option>
           <option>Noch kein Angebot</option>
           <option>Angebot liegt vor</option>
-          <option>Liefer-/Leistungsvertrag mit aufschiebender Bedingung unterschrieben</option>
+          <option>Liefer-/Leistungsvertrag mit aufschiebender oder auflösender Bedingung unterschrieben</option>
           <option>Auftrag ohne Bedingung unterschrieben</option>
           <option>Arbeiten bereits begonnen</option>
         </select>
@@ -327,7 +310,7 @@
       </label>
       <label class="f">Umfeldmaßnahmen (€)
         <input type="number" name="kostenUmfeld" min="0" step="100">
-        <small>z. B. Heizkörpertausch, Fundament, Elektrik, Demontage alte Anlage, Energieberatung</small>
+        <small>z. B. Heizkörpertausch, Fundament, Elektrik, Demontage alte Anlage, Fachplanung und Baubegleitung</small>
       </label>
       <label class="f full">Summe förderfähige Kosten laut Angebot
         <input type="text" id="kostenSumme" readonly tabindex="-1">
@@ -344,13 +327,24 @@
         <input type="number" name="weSelbst" min="1" value="1">
       </label>
       <fieldset class="full show-if" data-if="selbst=ja">
-        <legend>Zu versteuerndes Haushaltseinkommen (Durchschnitt der Steuerbescheide aus dem 2. und 3. Jahr vor Antragstellung)</legend>
+        <legend>Lebt in Ihrem Haushalt mindestens ein minderjähriges Kind, für das Sie Kindergeld erhalten?</legend>
+        <div class="choices">
+          <label><input type="radio" name="kind" value="ja"> Ja</label>
+          <label><input type="radio" name="kind" value="nein"> Nein</label>
+        </div>
+        <p class="hint">Familienzuschlag: Mit Kind (Hauptwohnsitz im Haushalt) erhöhen sich die Einkommensgrenzen für den Einkommens-Bonus einmalig um 10.000 €.</p>
+      </fieldset>
+      <fieldset class="full show-if" data-if="selbst=ja">
+        <legend>Zu versteuerndes Haushaltseinkommen pro Jahr (Durchschnitt aus den Einkommensteuerbescheiden des 2. und 3. Jahres vor Antragstellung)</legend>
         <div class="choices col">
-          <label><input type="radio" name="einkommen" value="unter"> bis 40.000 € pro Jahr</label>
-          <label><input type="radio" name="einkommen" value="ueber"> über 40.000 € pro Jahr</label>
+          <label><input type="radio" name="einkommen" value="30"> bis 30.000 €</label>
+          <label><input type="radio" name="einkommen" value="40"> 30.001 bis 40.000 €</label>
+          <label><input type="radio" name="einkommen" value="50"> 40.001 bis 50.000 €</label>
+          <label><input type="radio" name="einkommen" value="60"> 50.001 bis 60.000 €</label>
+          <label><input type="radio" name="einkommen" value="ueber"> über 60.000 €</label>
           <label><input type="radio" name="einkommen" value="unbekannt"> weiß ich nicht / möchte ich nicht angeben</label>
         </div>
-        <p class="hint">Das zu versteuernde Einkommen steht im Steuerbescheid und ist meist deutlich niedriger als das Bruttoeinkommen (Kinderfreibeträge u. a. werden abgezogen).</p>
+        <p class="hint">Es zählt das Einkommen der im Haus gemeldeten Eigentümer und ihrer (Ehe-)Partner. Das zu versteuernde Einkommen steht im Steuerbescheid und ist meist deutlich niedriger als das Bruttoeinkommen.</p>
       </fieldset>
       <fieldset class="full">
         <legend>Zusätzlich Interesse an …</legend>
@@ -376,12 +370,12 @@
     <p class="lead">Bitte haken Sie ab, was Sie uns bereits mitschicken können. Fehlende Unterlagen können nachgereicht werden.</p>
     <div class="choices col doclist">
       <label><input type="checkbox" name="docs" value="Angebot"> <span>Angebot(e) des Fachbetriebs<small>vollständig, mit Positionen und Preisen</small></span></label>
-      <label><input type="checkbox" name="docs" value="Vertrag"> <span>Liefer-/Leistungsvertrag mit aufschiebender Bedingung<small>Auftrag gilt erst ab Förderzusage – Pflicht vor Antragstellung</small></span></label>
+      <label><input type="checkbox" name="docs" value="Vertrag"> <span>Liefer-/Leistungsvertrag mit aufschiebender oder auflösender Bedingung<small>an die Förderzusage geknüpft, mit voraussichtlichem Umsetzungsdatum – Pflicht vor Antragstellung</small></span></label>
       <label><input type="checkbox" name="docs" value="Datenblatt"> <span>Technisches Datenblatt der neuen Heizung</span></label>
       <label><input type="checkbox" name="docs" value="Schornsteinfeger"> <span>Schornsteinfeger-Protokoll / Typenschild-Foto der alten Heizung<small>Nachweis für Alter und Energieträger</small></span></label>
-      <label><input type="checkbox" name="docs" value="Grundbuch"> <span>Grundbuchauszug oder Kaufvertrag<small>Nachweis des Eigentums</small></span></label>
-      <label><input type="checkbox" name="docs" value="Meldebescheinigung" class="docSelbst"> <span>Meldebescheinigung<small>Nachweis Hauptwohnsitz (für Klimageschwindigkeits-Bonus)</small></span></label>
-      <label><input type="checkbox" name="docs" value="Steuerbescheide" class="docEink"> <span>Einkommensteuerbescheide aller Haushaltsmitglieder<small>aus dem 2. und 3. Jahr vor Antragstellung (für Einkommens-Bonus)</small></span></label>
+      <label><input type="checkbox" name="docs" value="Grundbuch"> <span>Grundbuchauszug<small>Nachweis des Eigentums (mit allen eingetragenen Eigentümern)</small></span></label>
+      <label><input type="checkbox" name="docs" value="Meldebescheinigung" class="docSelbst"> <span>Meldebescheinigung<small>Nachweis Hauptwohnsitz (für Klimageschwindigkeits- und Einkommens-Bonus; beim Familienzuschlag auch für das Kind)</small></span></label>
+      <label><input type="checkbox" name="docs" value="Steuerbescheide" class="docEink"> <span>Einkommensteuerbescheide der im Haus gemeldeten Eigentümer und ihrer (Ehe-)Partner<small>aus dem 2. und 3. Jahr vor Antragstellung (für Einkommens-Bonus); Lohnsteuerbescheinigung oder Rentenbescheid genügen nicht</small></span></label>
       <label><input type="checkbox" name="docs" value="Einverstaendnis"> <span>Einverständniserklärung weiterer Eigentümer / WEG-Beschluss</span></label>
       <label><input type="checkbox" name="docs" value="Fotos"> <span>Fotos: Heizraum, alte Heizung, geplanter Aufstellort, Zählerschrank</span></label>
       <label><input type="checkbox" name="docs" value="Grundriss"> <span>Grundrisse / Pläne (falls vorhanden)</span></label>
@@ -396,12 +390,13 @@
     <h2>7. Das Wichtigste auf einen Blick</h2>
     <p class="lead">Damit die Förderung nicht verloren geht:</p>
     <ul class="rules">
-      <li><strong>Erst Antrag, dann Auftrag.</strong> Vor Antragstellung darf nur ein Vertrag mit <em>aufschiebender oder auflösender Bedingung</em> (Förderzusage) unterschrieben werden. Mit den Arbeiten darf erst nach Antragstellung begonnen werden.</li>
+      <li><strong>Erst Vertrag mit Bedingung, dann Antrag, dann Umsetzung.</strong> Vor der Antragstellung schließen Sie mit dem Fachbetrieb einen Liefer- oder Leistungsvertrag mit <em>aufschiebender oder auflösender Bedingung</em> (Förderzusage der KfW), der auch das voraussichtliche Umsetzungsdatum nennt. Ein Auftrag ohne diese Bedingung gilt als Vorhabenbeginn – die Förderung entfällt dann. Mit den Arbeiten darf erst nach Antragstellung begonnen werden.</li>
       <li><strong>Antrag im KfW-Portal „Meine KfW“.</strong> Wir unterstützen Sie bei der Registrierung und Antragstellung.</li>
       <li><strong>Frist für die Umsetzung:</strong> 36 Monate ab Förderzusage.</li>
-      <li><strong>Nachweis nach Abschluss:</strong> Rechnungen und Bestätigung des Fachbetriebs werden im Portal hochgeladen – spätestens 6 Monate nach Ablauf der Umsetzungsfrist.</li>
+      <li><strong>Nachweis nach Abschluss:</strong> Rechnungen und Bestätigung des Fachbetriebs werden im Portal hochgeladen – innerhalb von 6 Monaten nach Abschluss der Maßnahme, spätestens 6 Monate nach Ablauf der Umsetzungsfrist.</li>
       <li><strong>Auszahlung</strong> erfolgt erst nach Prüfung der Nachweise, direkt auf Ihr Konto. Die Rechnungen müssen per Überweisung bezahlt werden (keine Barzahlung).</li>
-      <li><strong>Höchstgrenze:</strong> Pro Kalenderjahr und Wohneinheit gelten Höchstbeträge für förderfähige Kosten – bei weiteren Maßnahmen im selben Jahr bitte vorher mit uns abstimmen.</li>
+      <li><strong>Höchstgrenze:</strong> Die förderfähigen Kosten sind je Gebäude begrenzt (<span id="capText"></span>). Frühere Heizungsförderungen für dasselbe Gebäude werden darauf angerechnet.</li>
+      <li><strong>Die Förderung sinkt schrittweise:</strong> Klimageschwindigkeits-Bonus und Höchstbetrag werden halbjährlich zum 01.02. und 01.08. reduziert. Maßgeblich ist der Tag der Antragstellung.</li>
     </ul>
     <div class="box info">Die Förderbedingungen können sich kurzfristig ändern. Maßgeblich sind die zum Zeitpunkt der Antragstellung gültigen Richtlinien der KfW.</div>
   </section>
@@ -467,14 +462,38 @@ const CONFIG = {
   mailBetreff:"Fragebogen Heizungstausch"
 };
 
-/* Fördersätze BEG EM (Heizungstausch) – Stand 2026, bei Änderungen hier anpassen */
+/* Fördersätze BEG EM Heizungstausch (KfW 458) – Bedingungen seit 21.07.2026,
+   KfW-Merkblatt 458 Stand 09/2026. Bei Änderungen hier anpassen.
+   Stufen gelten jeweils für Anträge ab dem angegebenen Datum. */
 const FOERDER = {
-  grund: 30, klima: 20, einkommen: 30, effizienz: 5, max: 70,
-  einkommensgrenze: 40000,
-  kostenWE1: 30000, kostenWE2bis6: 15000, kostenWEab7: 8000,
-  biomasseZuschlag: 2500,
+  grund: 30,
+  // Klimageschwindigkeits-Bonus in % – sinkt halbjährlich um 4 Punkte, entfällt ab 01.08.2028
+  klimaStufen: [["2026-07-21", 16], ["2027-02-01", 12], ["2027-08-01", 8], ["2028-02-01", 4], ["2028-08-01", 0]],
+  // Einkommens-Bonus: [zu versteuerndes Haushaltseinkommen bis €, Bonus in %]
+  einkommenStufen: [[30000, 40], [40000, 30], [50000, 10]],
+  familienzuschlag: 10000,        // einmalig, bei mind. einem minderjährigen Kind im Haushalt
+  max: 70, maxNiedrig: 80,        // 80 % nur in der untersten Einkommensstufe
+  // Höchstbetrag 1. Wohneinheit: sinkt ab 01.02.2027 halbjährlich um 750 €
+  kostenWE1: 28000, kostenWE1Ab: "2027-02-01", kostenWE1Schritt: 750,
+  kostenWE1Min: 22000,            // Endwert laut Fachpresse (2030); im Merkblatt nicht genannt
+  kostenWE2bis6: 15000, kostenWEab7: 8000,
   klimaMindestalter: 20
 };
+const tag = s => new Date(s + "T00:00:00");
+function klimaSatz(heute){
+  let p = 0;
+  for (const [ab, satz] of FOERDER.klimaStufen) if (heute >= tag(ab)) p = satz;
+  return p;
+}
+function naechsteKlimaStufe(heute){
+  return FOERDER.klimaStufen.find(([ab]) => tag(ab) > heute) || null;
+}
+function hoechstWE1(heute){
+  const start = tag(FOERDER.kostenWE1Ab);
+  if (heute < start) return FOERDER.kostenWE1;
+  const halbjahre = Math.floor(((heute.getFullYear() - start.getFullYear()) * 12 + heute.getMonth() - start.getMonth()) / 6) + 1;
+  return Math.max(FOERDER.kostenWE1Min, FOERDER.kostenWE1 - halbjahre * FOERDER.kostenWE1Schritt);
+}
 
 /* ================================================================ */
 const STORE = "heizungstausch-fragebogen-v1";
@@ -581,56 +600,70 @@ function update(){
   document.getElementById("kostenSumme").value = kosten ? eur(kosten) : "";
 
   /* Förderberechnung */
+  const heute = new Date();
+  const klimaPct = klimaSatz(heute);
   const n = Math.max(1, Math.round(num(d.weHeizung)) || 1);
-  const cap = FOERDER.kostenWE1 + Math.min(Math.max(n - 1, 0), 5) * FOERDER.kostenWE2bis6 + Math.max(n - 6, 0) * FOERDER.kostenWEab7;
+  const cap = hoechstWE1(heute) + Math.min(Math.max(n - 1, 0), 5) * FOERDER.kostenWE2bis6 + Math.max(n - 6, 0) * FOERDER.kostenWEab7;
   const foerderfaehig = Math.min(kosten, cap);
+  document.getElementById("capText").textContent =
+    eur(hoechstWE1(heute)) + " für die erste Wohneinheit, je " + eur(FOERDER.kostenWE2bis6) + " für die 2. bis 6. und je " + eur(FOERDER.kostenWEab7) + " ab der 7. Wohneinheit";
 
   const selbst = d.selbst === "ja";
   const nSelbst = selbst ? Math.min(n, Math.max(1, Math.round(num(d.weSelbst)) || 1)) : 0;
   const anteilSelbst = foerderfaehig * nSelbst / n;
 
-  const jahr = new Date().getFullYear();
+  const jahr = heute.getFullYear();
   const altJahr = num(d.altJahr);
   const alt = d.altEnergie || "";
   const funktioniert = d.altFunktion === "ja";
   const immerKlima = ["Heizöl", "Kohle", "Nachtspeicher", "Gas-Etagenheizung"].includes(alt);
   const alterKlima = ["Erdgas (Zentralheizung)", "Flüssiggas", "Biomasse (Holz/Pellets)"].includes(alt) && altJahr > 0 && (jahr - altJahr) >= FOERDER.klimaMindestalter;
-  const biomasseOhneKombi = d.neuArt === "biomasse" && !d.biomasseKombi;
-  const klima = selbst && funktioniert && (immerKlima || alterKlima) && !biomasseOhneKombi;
-  const eink = selbst && d.einkommen === "unter";
-  const eff = (d.neuArt === "wp-sole" || d.neuArt === "wp-wasser") || (d.neuArt === "wp-luft" && d.kaeltemittel === "natuerlich");
+  const klima = klimaPct > 0 && selbst && funktioniert && (immerKlima || alterKlima);
+
+  // Einkommens-Bonus: gewählte Einkommensspanne (Obergrenze in Tsd. €), ggf. abzüglich Familienzuschlag
+  const kind = selbst && d.kind === "ja";
+  const ekOben = parseInt(d.einkommen, 10);
+  let einkPct = 0, stufeNiedrig = false;
+  if (selbst && ekOben) {
+    const angesetzt = ekOben * 1000 - (kind ? FOERDER.familienzuschlag : 0);
+    const idx = FOERDER.einkommenStufen.findIndex(([grenze]) => angesetzt <= grenze);
+    if (idx >= 0) { einkPct = FOERDER.einkommenStufen[idx][1]; stufeNiedrig = idx === 0; }
+  }
+  const eink = einkPct > 0;
+  const maxPct = stufeNiedrig ? FOERDER.maxNiedrig : FOERDER.max;
 
   const kh = document.getElementById("klimaHint");
-  if (alt) {
+  if (alt && klimaPct > 0) {
     let t;
     if (!selbst && (immerKlima || alterKlima)) t = "Der Klimageschwindigkeits-Bonus käme grundsätzlich in Frage, gilt aber nur für selbst bewohnte Wohneinheiten (siehe Schritt 5).";
-    else if (immerKlima || alterKlima) t = funktioniert ? "Voraussichtlich Anspruch auf den Klimageschwindigkeits-Bonus (+" + FOERDER.klima + " %), sofern Sie das Gebäude selbst bewohnen." : "Der Klimageschwindigkeits-Bonus setzt eine noch funktionstüchtige Heizung voraus.";
+    else if (immerKlima || alterKlima) t = funktioniert ? "Voraussichtlich Anspruch auf den Klimageschwindigkeits-Bonus (+" + klimaPct + " %), sofern Sie das Gebäude selbst bewohnen." : "Der Klimageschwindigkeits-Bonus setzt eine noch funktionstüchtige Heizung voraus.";
     else if (["Erdgas (Zentralheizung)", "Flüssiggas", "Biomasse (Holz/Pellets)"].includes(alt)) t = "Für den Klimageschwindigkeits-Bonus muss diese Heizung mindestens " + FOERDER.klimaMindestalter + " Jahre alt sein. Bitte Inbetriebnahmejahr angeben.";
     if (t) { kh.textContent = t; kh.classList.remove("hidden"); } else kh.classList.add("hidden");
   } else kh.classList.add("hidden");
 
   const rows = [];
-  const pctFor = [];
   rows.push(["Förderfähige Kosten (Höchstgrenze " + eur(cap) + " bei " + n + " WE)", eur(foerderfaehig), true]);
   rows.push(["Grundförderung " + FOERDER.grund + " %", eur(foerderfaehig * FOERDER.grund / 100), true]);
-  rows.push(["Effizienz-Bonus " + FOERDER.effizienz + " %" + (eff ? "" : " – nur WP mit natürl. Kältemittel oder Erdreich/Wasser"), eur(eff ? foerderfaehig * FOERDER.effizienz / 100 : 0), eff]);
 
-  // Boni für selbst genutzten Anteil; Summe begrenzt auf max. %
-  const pctSelbst = Math.min(FOERDER.max, FOERDER.grund + (eff ? FOERDER.effizienz : 0) + (klima ? FOERDER.klima : 0) + (eink ? FOERDER.einkommen : 0));
-  const pctFremd = Math.min(FOERDER.max, FOERDER.grund + (eff ? FOERDER.effizienz : 0));
-  const bonusRoh = (klima ? FOERDER.klima : 0) + (eink ? FOERDER.einkommen : 0);
+  // Boni nur für den selbst genutzten Anteil; Summe begrenzt auf max. %
+  const pctFremd = FOERDER.grund;
+  const bonusRoh = (klima ? klimaPct : 0) + einkPct;
+  const pctSelbst = Math.min(maxPct, FOERDER.grund + bonusRoh);
   const bonusWirksam = pctSelbst - pctFremd;
   const kappung = bonusRoh > bonusWirksam;
+  const anteilText = n > 1 ? " (auf selbst bewohnten Anteil)" : "";
 
-  const klimaBetrag = klima ? anteilSelbst * Math.min(FOERDER.klima, bonusWirksam) / 100 : 0;
-  const einkBetrag = eink ? anteilSelbst * (bonusWirksam - (klima ? Math.min(FOERDER.klima, bonusWirksam) : 0)) / 100 : 0;
-  rows.push(["Klimageschwindigkeits-Bonus " + FOERDER.klima + " %" + (klima ? (n > 1 ? " (auf selbst bewohnten Anteil)" : "") : " – nicht erfüllt"), eur(klimaBetrag), klima]);
-  rows.push(["Einkommens-Bonus " + FOERDER.einkommen + " %" + (eink ? (kappung ? " (gekappt, max. " + FOERDER.max + " % gesamt)" : "") : d.einkommen === "unbekannt" ? " – Einkommen unbekannt" : " – nicht erfüllt"), eur(einkBetrag), eink]);
+  const klimaWirksam = klima ? Math.min(klimaPct, bonusWirksam) : 0;
+  const klimaBetrag = anteilSelbst * klimaWirksam / 100;
+  const einkBetrag = anteilSelbst * (bonusWirksam - klimaWirksam) / 100;
+  rows.push([klimaPct > 0
+      ? "Klimageschwindigkeits-Bonus " + klimaPct + " %" + (klima ? anteilText : " – nicht erfüllt")
+      : "Klimageschwindigkeits-Bonus – entfallen", eur(klimaBetrag), klima]);
+  rows.push([eink
+      ? "Einkommens-Bonus " + einkPct + " %" + (kind ? " (mit Familienzuschlag)" : "") + anteilText + (kappung ? " – gekappt, max. " + maxPct + " % gesamt" : "")
+      : "Einkommens-Bonus" + (selbst && d.einkommen === "unbekannt" ? " (10 bis 40 %) – Einkommen unbekannt" : " – nicht erfüllt"), eur(einkBetrag), eink]);
 
-  const biom = d.neuArt === "biomasse" && d.staubarm;
-  if (d.neuArt === "biomasse") rows.push(["Emissionsminderungs-Zuschlag (pauschal)", eur(biom ? Math.min(FOERDER.biomasseZuschlag, kosten) : 0), biom]);
-
-  const zuschuss = foerderfaehig * pctFremd / 100 + klimaBetrag + einkBetrag + (biom ? Math.min(FOERDER.biomasseZuschlag, kosten) : 0);
+  const zuschuss = foerderfaehig * pctFremd / 100 + klimaBetrag + einkBetrag;
   const quote = foerderfaehig ? zuschuss / foerderfaehig * 100 : pctSelbst;
 
   const body = document.getElementById("calcBody");
@@ -654,8 +687,13 @@ function update(){
   tr.children[1].textContent = eur(eigen);
   body.appendChild(tr);
 
+  const naechste = naechsteKlimaStufe(heute);
+  const fmtTag = s => tag(s).toLocaleDateString("de-DE", {day:"2-digit", month:"2-digit", year:"numeric"});
+  const andere = d.gebArt === "Nichtwohngebäude" || d.rolle === "Unternehmen / Kommune / Verein";
   document.getElementById("calcNote").textContent = kosten
-    ? "Unverbindliche Schätzung auf Basis der Förderrichtlinie BEG EM (Stand " + jahr + "). Maßgeblich ist allein die Förderzusage der KfW. Die Förderung ist auf " + FOERDER.max + " % begrenzt."
+    ? (andere ? "Achtung: Für Nichtwohngebäude und Unternehmen gelten andere Förderprogramme – diese Berechnung gilt nur für private Eigentümer von Wohngebäuden. " : "")
+      + "Unverbindliche Schätzung nach den heute gültigen Bedingungen der KfW-Heizungsförderung (Zuschuss 458). Maßgeblich sind der Tag der Antragstellung und die Förderzusage der KfW. Die Förderung ist auf " + FOERDER.max + " % begrenzt, in der niedrigsten Einkommensstufe auf " + FOERDER.maxNiedrig + " %."
+      + (naechste ? " Für Anträge ab " + fmtTag(naechste[0]) + " sinkt der Klimageschwindigkeits-Bonus auf " + naechste[1] + " % und der Höchstbetrag für die erste Wohneinheit um " + eur(FOERDER.kostenWE1Schritt) + "." : "")
     : "Bitte Kosten eingeben, um die Förderung zu berechnen.";
 
   window._summary = {kosten, foerderfaehig, zuschuss, eigen, quote};
